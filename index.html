@@ -4,90 +4,162 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="referrer" content="no-referrer">
-    <title>香港徒步全能導航 - 香港探店路綫圖</title>
+    <title>香港极速导航 - 宽阔视野版</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.css" />
     
     <style>
         :root { --hk-red: #d32f2f; --hk-green: #2e7d32; --hk-blue: #1976d2; --hk-yellow: #fdd835; }
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: -apple-system, sans-serif; overflow: hidden; background: #fafafa; }
-        #app { display: flex; height: 100vh; width: 100vw; }
-        @media (max-width: 768px) { #app { flex-direction: column; } #sidebar { width: 100% !important; height: 50vh !important; order: 2; } #map { height: 50vh !important; order: 1; } }
-        #sidebar { width: 380px; background: #fff; z-index: 1000; display: flex; flex-direction: column; box-shadow: 2px 0 20px rgba(0,0,0,0.1); border-right: 1px solid #eee; }
-        .header { background: var(--hk-red); color: white; padding: 15px; text-align: center; border-bottom: 5px solid var(--hk-yellow); }
-        .header h1 { margin: 0; font-size: 22px; letter-spacing: 2px; font-weight: 900; }
-        .content { padding: 20px; flex: 1; overflow-y: auto; background: #fdfdfd; }
-        .card { background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); }
-        .card-title { font-size: 15px; font-weight: 800; margin-bottom: 12px; color: #222; display: flex; align-items: center; gap: 8px; }
-        .input-stack { display: flex; flex-direction: column; gap: 10px; }
-        .input-row { display: flex; gap: 8px; align-items: center; }
-        .role-tag { width: 48px; text-align: center; font-size: 11px; font-weight: bold; padding: 5px 0; border-radius: 6px; flex-shrink: 0; }
-        .tag-start { background: #e8f5e9; color: var(--hk-green); border: 1px solid var(--hk-green); }
-        .tag-way { background: #e3f2fd; color: var(--hk-blue); border: 1px solid var(--hk-blue); }
-        .tag-end { background: #ffebee; color: var(--hk-red); border: 1px solid var(--hk-red); }
-        input, textarea { flex: 1; padding: 10px 12px; border: 1.5px solid #eee; border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; background: #fafafa; }
-        input:focus, textarea:focus { border-color: var(--hk-red); background: #fff; }
-        .btn { padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; transition: 0.2s; white-space: nowrap; }
-        .btn-black { background: #222; color: white; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: -apple-system, sans-serif; overflow: hidden; }
+        
+        #app { display: flex; height: 100vh; width: 100vw; position: relative; }
+        
+        /* 地图：始终全屏 */
+        #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        /* 侧边栏/抽屉 */
+        #sidebar { 
+            position: absolute; top: 0; left: 0; width: 380px; height: 100%; 
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            z-index: 1000; display: flex; flex-direction: column; 
+            box-shadow: 2px 0 20px rgba(0,0,0,0.15); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 移动端适配：悬浮抽屉样式 */
+        @media (max-width: 768px) {
+            #sidebar { 
+                width: 92% !important; height: auto !important; max-height: 80vh;
+                top: auto; bottom: 15px; left: 4%; right: 4%;
+                border-radius: 20px; border: 1px solid rgba(0,0,0,0.1);
+                transform: translateY(0);
+            }
+            #sidebar.collapsed { transform: translateY(calc(100% - 60px)); }
+            .toggle-btn { display: block !important; }
+            .header { border-radius: 20px 20px 0 0; padding: 10px !important; }
+            .header h1 { font-size: 16px !important; }
+        }
+
+        .header { background: var(--hk-red); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--hk-yellow); cursor: pointer; position: relative; }
+        .header h1 { margin: 0; font-size: 20px; font-weight: 900; }
+        
+        /* 折叠按钮 */
+        .toggle-btn { 
+            display: none; position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            background: rgba(255,255,255,0.2); border-radius: 50%; width: 30px; height: 30px;
+            text-align: center; line-height: 30px; font-weight: bold; font-size: 18px;
+        }
+
+        .content { padding: 15px; flex: 1; overflow-y: auto; }
+        .card { background: white; border-radius: 12px; border: 1px solid #eee; padding: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .card-title { font-size: 13px; font-weight: 800; margin-bottom: 10px; color: #333; display: flex; align-items: center; gap: 6px; }
+
+        .input-row { display: flex; gap: 5px; align-items: center; margin-bottom: 8px; }
+        .role-tag { width: 40px; text-align: center; font-size: 9px; font-weight: bold; padding: 4px 0; border-radius: 4px; flex-shrink: 0; }
+        .tag-start { background: #e8f5e9; color: var(--hk-green); }
+        .tag-way { background: #e3f2fd; color: var(--hk-blue); }
+        .tag-end { background: #ffebee; color: var(--hk-red); }
+
+        input, textarea { flex: 1; padding: 8px 10px; border: 1px solid #eee; border-radius: 8px; font-size: 13px; outline: none; background: #f9f9f9; }
+        .btn { padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; white-space: nowrap; }
+        .btn-black { background: #333; color: white; }
         .btn-blue { background: var(--hk-blue); color: white; }
-        .btn-red { background: var(--hk-red); color: white; }
-        .presets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-        .preset-btn { background: #f5f5f7; border: 1px solid #e5e5e7; padding: 8px 4px; font-size: 11px; border-radius: 8px; text-align: center; cursor: pointer; transition: 0.2s; }
-        .preset-btn:hover { background: var(--hk-yellow); border-color: #fbc02d; font-weight: bold; }
-        .route-item { display: flex; align-items: center; padding: 12px; background: #fff; border-radius: 10px; margin-bottom: 8px; border: 1px solid #f0f0f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .indicator { font-size: 10px; padding: 3px 6px; border-radius: 4px; font-weight: bold; margin-right: 12px; min-width: 32px; text-align: center; }
-        .name-txt { flex: 1; font-weight: 600; font-size: 14px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .del-btn { color: #ccc; cursor: pointer; padding: 5px; font-size: 18px; line-height: 1; }
-        .del-btn:hover { color: var(--hk-red); }
-        #map { flex: 1; position: relative; background: #eee; }
-        #status-bar { position: absolute; bottom: 30px; left: 20px; background: rgba(0,0,0,0.8); color: #fff; padding: 10px 22px; border-radius: 30px; font-size: 12px; z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.2); pointer-events: none; display: flex; align-items: center; gap: 10px; }
-        .pulse { width: 10px; height: 10px; border-radius: 50%; background: #4caf50; box-shadow: 0 0 10px #4caf50; animation: pulse 2s infinite; }
+        .btn-green { background: var(--hk-green); color: white; }
+
+        .presets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .preset-btn { background: #f5f5f7; border: 1px solid #eee; padding: 6px 2px; font-size: 10px; border-radius: 6px; text-align: center; cursor: pointer; }
+
+        .route-item { display: flex; align-items: center; padding: 8px 12px; background: #fff; border-radius: 8px; margin-bottom: 5px; border: 1px solid #f0f0f0; font-size: 12px; }
+        .indicator { font-size: 9px; padding: 2px 4px; border-radius: 3px; font-weight: bold; margin-right: 10px; min-width: 28px; text-align: center; }
+        .name-txt { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* 状态条：改为顶部悬浮 */
+        #status-bar { 
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.7); color: #fff; padding: 6px 15px; border-radius: 20px; 
+            font-size: 11px; z-index: 2000; pointer-events: none; display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .pulse { width: 8px; height: 8px; border-radius: 50%; background: #4caf50; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { transform: scale(0.8); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.5; } 100% { transform: scale(0.8); opacity: 1; } }
     </style>
 </head>
 <body>
+
 <div id="app">
-    <div id="sidebar">
-        <div class="header"><h1>香港徒步旅遊導航</h1></div>
+    <div id="map"></div>
+    
+    <div id="status-bar">
+        <div class="pulse"></div>
+        <span id="status-txt">点击地图直接添加标记</span>
+    </div>
+
+    <div id="sidebar" id="sidebar">
+        <div class="header" onclick="toggleSidebar()">
+            <h1>🇭🇰 香港徒步全能導航</h1>
+            <div class="toggle-btn" id="toggle-icon">↓</div>
+        </div>
+        
         <div class="content">
             <div class="card">
-                <div class="card-title">🗺️ 核心路綫規劃 (A-B-C)</div>
+                <div class="card-title">📍 规划路线 (A-B-C)</div>
                 <div class="input-stack">
-                    <div class="input-row"><div class="role-tag tag-start">起点</div><input type="text" id="start-in" placeholder="输入起点名称..."><button class="btn btn-black" onclick="addPoint('start')">设定</button></div>
-                    <div class="input-row"><div class="role-tag tag-way">途径</div><input type="text" id="way-in" placeholder="输入店名/景点并回车..."><button class="btn btn-blue" onclick="addPoint('way')">添加</button></div>
-                    <div class="input-row"><div class="role-tag tag-end">终点</div><input type="text" id="end-in" placeholder="输入终点名称..."><button class="btn btn-red" onclick="addPoint('end')">设定</button></div>
+                    <div class="input-row">
+                        <div class="role-tag tag-start">起点</div>
+                        <input type="text" id="start-in" placeholder="输入起点...">
+                        <button class="btn btn-black" onclick="addPoint('start')">设定</button>
+                    </div>
+                    <div class="input-row">
+                        <div class="role-tag tag-way">途径</div>
+                        <input type="text" id="way-in" placeholder="添加途径点...">
+                        <button class="btn btn-blue" onclick="addPoint('way')">添加</button>
+                    </div>
+                    <div class="input-row">
+                        <div class="role-tag tag-end">终点</div>
+                        <input type="text" id="end-in" placeholder="输入终点...">
+                        <button class="btn btn-red" onclick="addPoint('end')">设定</button>
+                    </div>
                 </div>
             </div>
+
             <div class="card">
-                <div class="card-title">⛰️ 經典路綫一鍵加載</div>
+                <div class="card-title">⛰️ 经典路綫</div>
                 <div class="presets-grid">
-                    <div class="preset-btn" onclick="load('dragon')">🐲 龙脊徒步</div><div class="preset-btn" onclick="load('peak')">🚠 山顶环线</div><div class="preset-btn" onclick="load('lion')">🦁 狮子山头</div><div class="preset-btn" onclick="load('lamma')">⛴️ 南丫岛岛</div><div class="preset-btn" onclick="load('bigbuddha')">🧘 昂坪大佛</div><div class="preset-btn" onclick="load('tst_central')">🛳️ 维港跨海</div>
+                    <div class="preset-btn" onclick="load('dragon')">🐲 龙脊</div>
+                    <div class="preset-btn" onclick="load('peak')">🚠 山顶</div>
+                    <div class="preset-btn" onclick="load('lion')">🦁 狮子山</div>
+                    <div class="preset-btn" onclick="load('lamma')">⛴️ 南丫岛</div>
+                    <div class="preset-btn" onclick="load('bigbuddha')">🧘 大佛</div>
+                    <div class="preset-btn" onclick="load('tst_central')">⛴️ 维港</div>
                 </div>
             </div>
-            <div class="card">
-                <div class="card-title">📝 攻略批量粘贴</div>
-                <textarea id="bulk-txt" rows="2" placeholder="粘贴多个地名，用逗号或空格隔开..."></textarea>
-                <button class="btn" style="width:100%; margin-top:8px; background:var(--hk-blue); color:white;" onclick="bulkAdd()">批量匹配并生成</button>
-            </div>
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="btn" style="flex:1.5; background: var(--hk-green); color:white; font-size:14px;" onclick="optimize()">✨ 智能重排路线</button>
+
+            <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <button class="btn" style="flex:1.5; background: var(--hk-green); color:white;" onclick="optimize()">✨ 智能重排路线</button>
                 <button class="btn" style="flex:1; background: #eee; color:#666;" onclick="location.reload()">清空数据</button>
             </div>
+
             <div id="route-items"></div>
-            <p style="text-align:center; font-size:11px; color:#aaa; margin-top:30px;">Powered by Accio Helper • 2026.04</p>
         </div>
     </div>
-    <div id="map"><div id="status-bar"><div class="pulse"></div><span id="status-txt">系统已就绪：点击地图也可直接添加</span></div></div>
 </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
+
 <script>
     const notify = (m) => document.getElementById('status-txt').innerText = m;
+    
+    // 初始化地图
     const map = L.map('map', { zoomControl: false, tap: false }).setView([22.3193, 114.1694], 12);
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
-    let pts = [];
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '© CartoDB', subdomains: 'abcd', maxZoom: 19
+    }).addTo(map);
+
+    let pts = []; 
+
     const control = L.Routing.control({
         waypoints: [],
         router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
@@ -96,51 +168,126 @@
         createMarker: (i, wp) => {
             let p = pts[i];
             let color = p.role === 'start' ? '#2e7d32' : (p.role === 'end' ? '#c62828' : '#1976d2');
-            let icon = L.divIcon({ className: 'ico', html: `<div style="background-color:${color}; width:14px; height:14px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(0,0,0,0.4);"></div>`, iconSize: [14, 14], iconAnchor: [7, 7] });
-            return L.marker(wp.latLng, { icon }).bindPopup(`<b>${p.name}</b><br>身份：${p.role==='start'?'起点':(p.role==='end'?'终点':'途径点')}`);
+            let icon = L.divIcon({
+                className: 'marker-ico',
+                html: `<div style="background-color:${color}; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 0 8px rgba(0,0,0,0.3);"></div>`,
+                iconSize: [12, 12], iconAnchor: [6, 6]
+            });
+            return L.marker(wp.latLng, { icon }).bindPopup(`站${i+1}: ${p.name}`);
         }
     }).addTo(map);
-    control.on('routesfound', () => notify("⚡ 智能路径已生成"));
+
+    control.on('routesfound', () => notify("⚡ 路径已更新"));
+
     async function search(q) {
-        try { const r = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q + ' Hong Kong')}&lang=zh&limit=1`); const d = await r.json(); if (d.features && d.features.length > 0) { const f = d.features[0]; return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], name: q }; } } catch(e) {} return null;
+        try {
+            const r = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q + ' Hong Kong')}&lang=zh&limit=1`);
+            const d = await r.json();
+            if (d.features && d.features.length > 0) {
+                const f = d.features[0];
+                return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], name: q };
+            }
+        } catch(e) {}
+        return null;
     }
-    async function addPoint(role, customName = null) {
+
+    async function addPoint(role, nameVal = null) {
         const inputId = role === 'start' ? 'start-in' : (role === 'end' ? 'end-in' : 'way-in');
         const input = document.getElementById(inputId);
-        const name = customName || input.value.trim(); if(!name) return;
+        const name = nameVal || input.value.trim();
+        if(!name) return;
+
         notify(`🔍 正在搜寻 "${name}"...`);
         const res = await search(name);
         if(res) {
             const newPt = { latLng: L.latLng(res.lat, res.lon), name: res.name, role: role };
-            if(role === 'start') { const sIdx = pts.findIndex(p => p.role === 'start'); if(sIdx !== -1) pts.splice(sIdx, 1); pts.unshift(newPt); }
-            else if(role === 'end') { const eIdx = pts.findIndex(p => p.role === 'end'); if(eIdx !== -1) pts.splice(eIdx, 1); pts.push(newPt); }
-            else { const eIdx = pts.findIndex(p => p.role === 'end'); if(eIdx !== -1) pts.splice(eIdx, 0, newPt); else pts.push(newPt); }
-            update(); if(input) input.value = "";
-        } else { notify(`❌ 未找到地点: ${name}`, true); }
+            if(role === 'start') {
+                const sIdx = pts.findIndex(p => p.role === 'start');
+                if(sIdx !== -1) pts.splice(sIdx, 1);
+                pts.unshift(newPt);
+            } else if(role === 'end') {
+                const eIdx = pts.findIndex(p => p.role === 'end');
+                if(eIdx !== -1) pts.splice(eIdx, 1);
+                pts.push(newPt);
+            } else {
+                const eIdx = pts.findIndex(p => p.role === 'end');
+                if(eIdx !== -1) pts.splice(eIdx, 0, newPt); else pts.push(newPt);
+            }
+            update();
+            if(input) input.value = "";
+        }
     }
-    async function bulkAdd() { const txt = document.getElementById('bulk-txt').value; const names = txt.split(/[,\n， ]/).map(n => n.trim()).filter(n => n); for(let n of names) await addPoint('way', n); document.getElementById('bulk-txt').value = ""; }
+
     const presets = {
         dragon: [{lat:22.2346,lon:114.2372,r:'start',n:'石澳道'}, {lat:22.2471,lon:114.2438,r:'way',n:'龙脊'}, {lat:22.2492,lon:114.2443,r:'end',n:'大浪湾'}],
         peak: [{lat:22.2778,lon:114.1492,r:'start',n:'山顶广场'}, {lat:22.2745,lon:114.1432,r:'way',n:'卢吉道'}, {lat:22.2766,lon:114.1495,r:'end',n:'凌霄阁'}],
-        lion: [{lat:22.3488,lon:114.1865,r:'start',n:'黄大仙'}, {lat:22.3524,lon:114.1812,r:'way',n:'狮子山登山道'}, {lat:22.3522,lon:114.1732,r:'end',n:'狮子山头'}]
+        lion: [{lat:22.3488,lon:114.1865,r:'start',n:'黄大仙'}, {lat:22.3524,lon:114.1812,r:'way',n:'狮子山道'}, {lat:22.3522,lon:114.1732,r:'end',n:'狮子山头'}]
     };
-    function load(k) { notify("🚀 正在载入预设路线..."); const data = presets[k]; if(!data) return; pts = data.map(d => ({ latLng: L.latLng(d.lat, d.lon), name: d.n, role: d.r })); update(); }
+
+    function load(k) {
+        const data = presets[k];
+        if(!data) return;
+        pts = data.map(d => ({ latLng: L.latLng(d.lat, d.lon), name: d.n, role: d.r }));
+        update();
+        if(window.innerWidth < 768) toggleSidebar(true);
+    }
+
     function update() {
-        pts.sort((a, b) => { if(a.role === 'start') return -1; if(b.role === 'start') return 1; if(a.role === 'end') return 1; if(b.role === 'end') return -1; return 0; });
+        pts.sort((a, b) => {
+            if(a.role === 'start') return -1;
+            if(b.role === 'start') return 1;
+            if(a.role === 'end') return 1;
+            if(b.role === 'end') return -1;
+            return 0;
+        });
         control.setWaypoints(pts.map(p => p.latLng));
         const listDiv = document.getElementById('route-items');
-        if(!pts.length) { listDiv.innerHTML = '<p style="text-align:center; color:#ccc; padding:20px; font-size:12px;">暂无地点</p>'; return; }
-        listDiv.innerHTML = pts.map((p, i) => { let l = p.role === 'start' ? '起点' : (p.role === 'end' ? '终点' : '途径'); let c = p.role === 'start' ? 'tag-start' : (p.role === 'end' ? 'tag-end' : 'tag-way'); return `<div class="route-item"><div class="indicator ${c}">${l}</div><div class="name-txt">${p.name}</div><div class="del-btn" onclick="pts.splice(${i},1);update()">✕</div></div>`; }).join('');
-        if(pts.length > 0) { const g = new L.featureGroup(pts.map(p => L.marker(p.latLng))); map.fitBounds(g.getBounds().pad(0.3)); }
+        listDiv.innerHTML = pts.map((p, i) => {
+            let label = p.role === 'start' ? '起点' : (p.role === 'end' ? '终点' : '途径');
+            let cls = p.role === 'start' ? 'tag-start' : (p.role === 'end' ? 'tag-end' : 'tag-way');
+            return `<div class="route-item"><div class="indicator ${cls}">${label}</div><div class="name-txt">${p.name}</div><div onclick="pts.splice(${i},1);update()" style="color:#ccc;cursor:pointer">✕</div></div>`;
+        }).join('');
+        if(pts.length > 0) {
+            const g = new L.featureGroup(pts.map(p => L.marker(p.latLng)));
+            map.fitBounds(g.getBounds().pad(0.3));
+        }
     }
+
     function optimize() {
-        if (pts.length < 3) return; let s = pts.find(p => p.role === 'start') || pts[0]; let e = pts.find(p => p.role === 'end') || pts[pts.length - 1]; let ways = pts.filter(p => p.role === 'way' || (p !== s && p !== e)); let sorted = []; let cur = s.latLng;
-        while (ways.length > 0) { ways.sort((a, b) => cur.distanceTo(a.latLng) - cur.distanceTo(b.latLng)); let next = ways.shift(); sorted.push(next); cur = next.latLng; }
-        pts = [s, ...sorted]; if(e !== s) pts.push(e); pts[0].role = 'start'; if(pts.length>1) pts[pts.length-1].role = 'end'; for(let i=1; i<pts.length-1; i++) pts[i].role = 'way'; update();
+        if (pts.length < 3) return;
+        let s = pts.find(p => p.role === 'start') || pts[0];
+        let e = pts.find(p => p.role === 'end') || pts[pts.length - 1];
+        let ways = pts.filter(p => p.role === 'way' || (p !== s && p !== e));
+        let sorted = []; let cur = s.latLng;
+        while (ways.length > 0) {
+            ways.sort((a, b) => cur.distanceTo(a.latLng) - cur.distanceTo(b.latLng));
+            let next = ways.shift(); sorted.push(next); cur = next.latLng;
+        }
+        pts = [s, ...sorted]; if(e !== s) pts.push(e);
+        update();
     }
+
+    function toggleSidebar(forceCollapse = false) {
+        const sb = document.getElementById('sidebar');
+        const icon = document.getElementById('toggle-icon');
+        if(forceCollapse) {
+            sb.classList.add('collapsed');
+            icon.innerText = "↑";
+        } else {
+            sb.classList.toggle('collapsed');
+            icon.innerText = sb.classList.contains('collapsed') ? "↑" : "↓";
+        }
+    }
+
     map.on('click', async (e) => {
         notify("📍 正在分析位置...");
-        try { const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&accept-language=zh`); const d = await r.json(); const n = d.display_name.split(',')[0] || "选定点"; const newPt = { latLng: e.latlng, name: n, role: 'way' }; const eIdx = pts.findIndex(p => p.role === 'end'); if(eIdx !== -1) pts.splice(eIdx, 0, newPt); else pts.push(newPt); update(); } catch(err) { pts.push({ latLng: e.latlng, name: "地图点", role: 'way' }); update(); }
+        const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&accept-language=zh`);
+        const d = await r.json();
+        const n = d.display_name.split(',')[0] || "选定点";
+        const newPt = { latLng: e.latlng, name: n, role: 'way' };
+        const eIdx = pts.findIndex(p => p.role === 'end');
+        if(eIdx !== -1) pts.splice(eIdx, 0, newPt); else pts.push(newPt);
+        update();
     });
 </script>
 </body>
