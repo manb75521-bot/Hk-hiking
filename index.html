@@ -26,49 +26,45 @@
         }
         @media (max-width: 768px) {
             #sidebar { width: 100%; height: 50vh; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); }
-            #sidebar.minimized { height: 60px; }
+            #sidebar.minimized { height: 65px; }
         }
 
-        .header { background: var(--hk-red); color: white; padding: 15px; text-align: center; cursor: pointer; border-bottom: 4px solid #fdd835; flex-shrink: 0; }
+        .header { background: var(--hk-red); color: white; padding: 15px; text-align: center; cursor: pointer; border-bottom: 4px solid #fdd835; flex-shrink: 0; position: relative; }
         .header h1 { margin: 0; font-size: 18px; font-weight: 900; letter-spacing: 1px; }
+        .toggle-hint { font-size: 10px; opacity: 0.8; }
 
         .content { flex: 1; overflow-y: auto; padding: 15px; }
 
-        /* 卡片 */
+        /* 输入区 */
         .card { background: #fff; border-radius: 12px; border: 1px solid #eee; padding: 12px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .card-title { font-size: 13px; font-weight: bold; margin-bottom: 10px; color: #555; display: flex; align-items: center; gap: 6px; }
-
         .input-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; background: #f2f2f7; padding: 4px 10px; border-radius: 10px; border: 1px solid transparent; }
         .input-row:focus-within { border-color: var(--hk-red); background: #fff; }
-        
         .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
         input { border: none; background: transparent; flex: 1; padding: 10px 0; font-size: 14px; outline: none; color: #000; }
         .btn-mini { background: #000; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+        .btn-mini:disabled { background: #999; }
 
-        /* 列表 */
+        /* 列表展示 */
         .node-item { display: flex; align-items: center; padding: 10px; background: #f9f9f9; border-radius: 8px; margin-bottom: 8px; border: 1px solid #eee; gap: 10px; }
         .node-idx { background: #333; color: white; width: 20px; height: 20px; border-radius: 50%; text-align: center; line-height: 20px; font-size: 10px; flex-shrink: 0; }
-        .node-name { flex: 1; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        .photo-box { width: 35px; height: 35px; background: #ddd; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px dashed #bbb; flex-shrink: 0; }
+        .node-name { flex: 1; font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .photo-box { width: 35px; height: 35px; background: #ddd; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px dashed #bbb; flex-shrink: 0; position: relative; }
         .photo-box img { width: 100%; height: 100%; object-fit: cover; }
         .photo-box::after { content: '+'; color: #999; font-size: 18px; }
         .photo-box.has-img::after { display: none; }
 
-        /* 底部按钮 */
-        .footer-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; flex-shrink: 0; }
-        .btn-full { border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        /* 底部功能 */
+        .footer-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .btn-full { border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; }
         .btn-primary { background: var(--hk-red); color: white; }
         .btn-share { background: #ff2442; color: white; }
         .btn-secondary { background: #eee; color: #333; }
 
-        /* 定位按钮 */
+        /* 定位与状态 */
         #locate-btn { position: absolute; right: 20px; top: 20px; z-index: 1001; background: #fff; width: 45px; height: 45px; border-radius: 10px; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); cursor: pointer; font-size: 20px; }
-
-        /* 状态条 */
-        #status-bar { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 2000; background: rgba(0,0,0,0.8); color: white; padding: 8px 20px; border-radius: 30px; font-size: 11px; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        #status-bar { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 2000; background: rgba(0,0,0,0.8); color: white; padding: 8px 20px; border-radius: 30px; font-size: 11px; pointer-events: none; }
         
-        /* 导出容器 */
+        /* 导出界面 */
         #export-ui { position: fixed; left: -5000px; width: 400px; background: white; padding: 20px; }
     </style>
 </head>
@@ -78,53 +74,52 @@
     <div id="sidebar">
         <div class="header" onclick="toggleSidebar()">
             <h1>🇭🇰 香港徒步全能導航</h1>
-            <div style="font-size: 10px; opacity: 0.8;">(点击标题 收起/展开)</div>
+            <div class="toggle-hint">(点击标题 收起/展开)</div>
         </div>
         
         <div class="content">
             <div class="card">
-                <div class="card-title">📍 规划路线</div>
+                <div class="card-title">📍 规划路线 (支持中英文)</div>
                 <div class="input-row">
                     <div class="dot" style="background: var(--hk-green);"></div>
-                    <input type="text" id="in-start" placeholder="设定起点 (如: 尖沙咀)">
-                    <button class="btn-mini" onclick="doAdd('start')">设定</button>
+                    <input type="text" id="in-start" placeholder="搜索起点 (如: 旺角, 中环...)">
+                    <button class="btn-mini" onclick="smartAdd('start')">设定</button>
                 </div>
                 <div class="input-row">
                     <div class="dot" style="background: var(--hk-blue);"></div>
-                    <input type="text" id="in-way" placeholder="添加途径点 (如: 旺角)">
-                    <button class="btn-mini" onclick="doAdd('way')">添加</button>
+                    <input type="text" id="in-way" placeholder="搜索途径点 (如: 山顶, 龙脊...)">
+                    <button class="btn-mini" onclick="smartAdd('way')">添加</button>
                 </div>
                 <div class="input-row">
                     <div class="dot" style="background: var(--hk-red);"></div>
-                    <input type="text" id="in-end" placeholder="设定终点 (如: 山顶)">
-                    <button class="btn-mini" onclick="doAdd('end')">设定</button>
+                    <input type="text" id="in-end" placeholder="搜索终点 (如: 维港, 大佛...)">
+                    <button class="btn-mini" onclick="smartAdd('end')">设定</button>
                 </div>
             </div>
 
             <div class="footer-btns">
                 <button class="btn-full btn-primary" onclick="optimize()">✨ 智能重排</button>
                 <button class="btn-full btn-share" onclick="doExport()">📸 导出打卡图</button>
-                <button class="btn-full btn-secondary" onclick="location.reload()" style="grid-column: span 2;">🗑️ 重置所有</button>
+                <button class="btn-full btn-secondary" onclick="location.reload()" style="grid-column: span 2;">🗑️ 重置所有数据</button>
             </div>
 
             <div id="node-list" style="margin-top: 15px;">
-                <p style="text-align:center; color:#ccc; font-size:12px; margin-top:20px;">点击地图或输入地点开始</p>
+                <p style="text-align:center; color:#ccc; font-size:12px; margin-top:20px;">找不到地点？直接在地图上点击添加！</p>
             </div>
         </div>
     </div>
 
     <div id="map"></div>
     <div id="locate-btn" onclick="doLocate()">🧭</div>
-    <div id="status-bar">系统已就绪</div>
+    <div id="status-bar">系统准备就绪</div>
 </div>
 
-<!-- 导出模板 -->
 <div id="export-ui">
-    <h2 style="text-align:center; margin-bottom:5px;">香港徒步・步履不停</h2>
+    <h2 style="text-align:center; margin-bottom:5px;">香港徒步・轨迹记录</h2>
     <p id="ex-stats" style="text-align:center; font-size:14px; color:#666; margin-bottom:15px;"></p>
     <div id="ex-map" style="width:100%; height:250px; background:#eee; border-radius:10px; margin-bottom:15px;"></div>
     <div id="ex-photos" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
-    <p style="text-align:center; font-size:10px; color:#aaa; margin-top:20px;">由「香港极速导航」生成</p>
+    <p style="text-align:center; font-size:10px; color:#aaa; margin-top:20px;">—— 由「香港极速导航」智能生成 ——</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
@@ -134,7 +129,7 @@
 <script>
     const setLog = (m) => document.getElementById('status-bar').innerText = m;
     
-    // 初始化地图
+    // 1. 初始化地图
     const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([22.3193, 114.1694], 12);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
 
@@ -149,13 +144,7 @@
         createMarker: (i, wp) => {
             let p = pts[i];
             let color = p.role === 'start' ? '#00703c' : (p.role === 'end' ? '#cf1126' : '#003399');
-            return L.marker(wp.latLng, { 
-                icon: L.divIcon({ 
-                    className: '', 
-                    html: `<div style="background:${color}; width:14px; height:14px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 10px rgba(0,0,0,0.3);"></div>`, 
-                    iconSize: [14, 14], iconAnchor: [7, 7] 
-                }) 
-            }).bindPopup(p.name);
+            return L.marker(wp.latLng, { icon: L.divIcon({ className: '', html: `<div style="background:${color}; width:14px; height:14px; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 10px rgba(0,0,0,0.3);"></div>`, iconSize: [14, 14], iconAnchor: [7, 7] }) }).bindPopup(p.name);
         }
     }).addTo(map);
 
@@ -165,34 +154,60 @@
         setLog(statsStr);
     });
 
-    control.on('routingerror', () => setLog("路径生成忙，请稍后"));
+    // 2. 强力智能搜索逻辑
+    async function multiEngineSearch(q) {
+        const queries = [
+            q + ' Hong Kong',
+            q + ', HK',
+            q
+        ];
 
-    async function search(q) {
-        const query = q.includes('香港') ? q : q + ' Hong Kong';
-        try {
-            const r = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=zh&limit=1`);
-            const d = await r.json();
-            if (d.features && d.features[0]) {
-                const f = d.features[0];
-                return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], name: q };
-            }
-        } catch(e) {}
+        for (let query of queries) {
+            try {
+                // 引擎 A: Nominatim (中文友好)
+                let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&accept-language=zh`);
+                let data = await res.json();
+                if (data && data[0]) return { lat: data[0].lat, lon: data[0].lon };
+
+                // 引擎 B: Photon (模糊友好)
+                res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=zh&limit=1`);
+                data = await res.json();
+                if (data.features && data.features[0]) {
+                    const f = data.features[0];
+                    return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0] };
+                }
+            } catch (e) { console.error("搜索引擎尝试失败:", query); }
+        }
         return null;
     }
 
-    async function doAdd(role) {
+    async function smartAdd(role) {
         const input = document.getElementById('in-' + role);
         const name = input.value.trim(); if(!name) return;
-        setLog(`正在搜索 "${name}"...`);
-        const res = await search(name);
-        if(res) {
-            const newPt = { latLng: L.latLng(res.lat, res.lon), name: res.name, role: role, photo: null };
-            if(role === 'start') { const idx = pts.findIndex(p => p.role === 'start'); if(idx !== -1) pts.splice(idx, 1); pts.unshift(newPt); }
-            else if(role === 'end') { const idx = pts.findIndex(p => p.role === 'end'); if(idx !== -1) pts.splice(idx, 1); pts.push(newPt); }
-            else { const eIdx = pts.findIndex(p => p.role === 'end'); if(eIdx !== -1) pts.splice(eIdx, 0, newPt); else pts.push(newPt); }
-            updateUI(); input.value = "";
-            setLog("添加成功");
-        } else { setLog("未找到地点，请尝试详细地名"); }
+        
+        setLog(`🔍 正在多引擎搜寻 "${name}"...`);
+        const result = await multiEngineSearch(name);
+        
+        if(result) {
+            const newPt = { latLng: L.latLng(result.lat, result.lon), name: name, role: role, photo: null };
+            if(role === 'start') {
+                const idx = pts.findIndex(p => p.role === 'start');
+                if(idx !== -1) pts.splice(idx, 1);
+                pts.unshift(newPt);
+            } else if(role === 'end') {
+                const idx = pts.findIndex(p => p.role === 'end');
+                if(idx !== -1) pts.splice(idx, 1);
+                pts.push(newPt);
+            } else {
+                const eIdx = pts.findIndex(p => p.role === 'end');
+                if(eIdx !== -1) pts.splice(eIdx, 0, newPt); else pts.push(newPt);
+            }
+            updateUI();
+            input.value = "";
+            setLog("✅ 添加成功: " + name);
+        } else {
+            setLog("❌ 找不到地点，请尝试换个地名或直接点地图");
+        }
     }
 
     function updateUI() {
@@ -202,10 +217,8 @@
             <div class="node-item">
                 <div class="node-idx">${i+1}</div>
                 <div class="node-name">${p.name}</div>
-                <div class="photo-box ${p.photo?'has-img':''}" onclick="uploadPhoto(${i})">
-                    ${p.photo ? `<img src="${p.photo}">` : ''}
-                </div>
-                <div onclick="pts.splice(${i},1);updateUI()" style="color:#ccc; font-weight:bold; cursor:pointer; padding:5px;">✕</div>
+                <div class="photo-box ${p.photo?'has-img':''}" onclick="uploadPhoto(${i})">${p.photo ? `<img src="${p.photo}">` : ''}</div>
+                <div onclick="pts.splice(${i},1);updateUI()" style="color:#ccc; cursor:pointer; font-weight:bold;">✕</div>
             </div>
         `).join('');
         if(pts.length > 0) map.fitBounds(new L.featureGroup(pts.map(p => L.marker(p.latLng))).getBounds().pad(0.4));
@@ -213,12 +226,11 @@
 
     function uploadPhoto(idx) {
         const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
+        input.type = 'file'; input.accept = 'image/*';
         input.onchange = (e) => {
-            const reader = new FileReader();
-            reader.onload = (re) => { pts[idx].photo = re.target.result; updateUI(); };
-            reader.readAsDataURL(e.target.files[0]);
+            const r = new FileReader();
+            r.onload = (re) => { pts[idx].photo = re.target.result; updateUI(); };
+            r.readAsDataURL(e.target.files[0]);
         };
         input.click();
     }
@@ -231,26 +243,24 @@
         pts = [s, ...sorted, e]; updateUI();
     }
 
-    function toggleSidebar() {
-        if(window.innerWidth <= 768) document.getElementById('sidebar').classList.toggle('minimized');
-    }
+    function toggleSidebar() { if(window.innerWidth <= 768) document.getElementById('sidebar').classList.toggle('minimized'); }
 
     function doLocate() {
-        setLog("获取实时位置...");
+        setLog("📍 正在获取你的实时位置...");
         map.locate({setView: true, maxZoom: 16});
-        map.on('locationfound', (e) => { L.circle(e.latlng, e.accuracy).addTo(map); L.marker(e.latlng).addTo(map).bindPopup("你在这里").openPopup(); setLog("定位成功"); });
+        map.on('locationfound', (e) => { L.circle(e.latlng, e.accuracy).addTo(map); L.marker(e.latlng).addTo(map).bindPopup("你在这里").openPopup(); setLog("定位成功！"); });
     }
 
     map.on('click', async (e) => {
-        setLog("分析坐标中...");
+        setLog("⏳ 正在分析地图坐标地名...");
         try {
             const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}&accept-language=zh`);
             const d = await r.json();
-            const newPt = { latLng: e.latlng, name: d.display_name.split(',')[0] || "选定点", role: 'way', photo: null };
+            const n = d.display_name.split(',')[0] || "选定点";
+            const newPt = { latLng: e.latlng, name: n, role: 'way', photo: null };
             const eIdx = pts.findIndex(p => p.role === 'end');
             if(eIdx !== -1) pts.splice(eIdx, 0, newPt); else pts.push(newPt);
-            updateUI();
-            setLog("添加成功");
+            updateUI(); setLog("✅ 点击添加成功");
         } catch(err) {
             pts.push({ latLng: e.latlng, name: "地图点", role: 'way', photo: null }); updateUI();
         }
@@ -258,11 +268,9 @@
 
     function doExport() {
         if(pts.length < 2) { alert("请先添加至少2个地点"); return; }
-        setLog("正在合成图像...");
+        setLog("🎨 正在为您生成专属路线大图...");
         const container = document.getElementById('export-ui');
         document.getElementById('ex-stats').innerText = statsStr;
-        
-        // 照片墙
         const photoGrid = document.getElementById('ex-photos');
         photoGrid.innerHTML = pts.filter(p => p.photo).map(p => `
             <div style="background:#fff; border-radius:8px; overflow:hidden; border:1px solid #eee;">
@@ -271,21 +279,15 @@
             </div>
         `).join('');
 
-        // 截取当前地图可见区域
         html2canvas(document.getElementById('map'), { useCORS: true }).then(mapCanvas => {
             const exMap = document.getElementById('ex-map');
             exMap.innerHTML = "";
-            mapCanvas.style.width = "100%";
-            mapCanvas.style.height = "100%";
-            mapCanvas.style.objectFit = "cover";
+            mapCanvas.style.width = "100%"; mapCanvas.style.height = "100%"; mapCanvas.style.objectFit = "cover";
             exMap.appendChild(mapCanvas);
-
             html2canvas(container).then(finalCanvas => {
                 const link = document.createElement('a');
-                link.download = '香港徒步路线攻略.png';
-                link.href = finalCanvas.toDataURL();
-                link.click();
-                setLog("攻略图已保存");
+                link.download = '香港徒步打卡攻略.png'; link.href = finalCanvas.toDataURL(); link.click();
+                setLog("📸 攻略图已下载，发去分享吧！");
             });
         });
     }
